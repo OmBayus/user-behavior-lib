@@ -17,7 +17,10 @@ export default function BehaviorContextProvider({ form, children }) {
   const [fields, setFields] = useState({});
 
   const focusField = (field) => {
-    setCurrentField(new CurrentField(field.id, field.name, Date.now()));
+    setCurrentField(prev=>{
+      prev.init(field.id, field.name, Date.now());
+      return prev;
+    });
     setActions((prev) => [
       ...prev,
       new Action(field.id, field.name, ActionTypes.FOCUS_FIELD, Date.now()),
@@ -25,8 +28,9 @@ export default function BehaviorContextProvider({ form, children }) {
   };
 
   const focusOutField = (field) => {
+    const startTime = currentField.startTime;
     setFields((prev) => {
-      prev[field.id].addTime(Date.now() - currentField.startTime);
+      prev[field.id].addTime((Date.now() - startTime));
       return prev;
     });
     setCurrentField((prev) => {
@@ -44,7 +48,7 @@ export default function BehaviorContextProvider({ form, children }) {
     const _startTime = Date.now();
     const _actions = [
       ...actions,
-      new Action(null, null, ActionTypes.EXECUTE, Date.now()),
+      new Action("", "", ActionTypes.EXECUTE, Date.now()),
     ];
     setActiveTime(_activeTime);
     setStartTime(_startTime);
@@ -54,7 +58,7 @@ export default function BehaviorContextProvider({ form, children }) {
       activeTime: _activeTime,
       inactiveTime,
       actions: _actions,
-      fields,
+      fields: Object.values(fields),
     };
   };
 
@@ -63,7 +67,7 @@ export default function BehaviorContextProvider({ form, children }) {
     const _startTime = Date.now();
     const _actions = [
       ...actions,
-      new Action(null, null, ActionTypes.WINDOW_FOCUS, Date.now()),
+      new Action("", "", ActionTypes.WINDOW_FOCUS, Date.now()),
     ];
     setActiveTime(_activeTime);
     setStartTime(_startTime);
@@ -75,7 +79,7 @@ export default function BehaviorContextProvider({ form, children }) {
     const _startTime = Date.now();
     const _actions = [
       ...actions,
-      new Action(null, null, ActionTypes.WINDOW_FOCUS_OUT, Date.now()),
+      new Action("", "", ActionTypes.WINDOW_FOCUS_OUT, Date.now()),
     ];
     setInactiveTime(_inactiveTime);
     setStartTime(_startTime);
@@ -90,6 +94,12 @@ export default function BehaviorContextProvider({ form, children }) {
         _fields[field.id] = new Field(field.id, field.name, field.type);
       }
       setFields(_fields);
+      setActions([])
+      setCurrentField(new CurrentField(null, null, null));
+      setStartTime(Date.now());
+      setActiveTime(0);
+      setInactiveTime(0);
+      
 
       const handleVisibilityChange = () => {
         if (!document.hidden) {

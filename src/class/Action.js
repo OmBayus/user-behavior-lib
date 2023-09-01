@@ -1,8 +1,8 @@
 export default class Action {
-  constructor(id, name, type, time) {
-    this.id = id;
+  constructor(fieldId, name, type, date) {
+    this.fieldId = fieldId;
     this.name = name;
     this.type = type;
-    this.time = time;
+    this.date = date;
   }
 }
