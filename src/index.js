@@ -65,7 +65,6 @@ export default function BehaviorContextProvider({ form, children }) {
         _fields[field.id] = {id: field.id, name: field.name, type: field.type, totalTime: 0};
       }
       setFields(_fields);
-      setActions([])
       setCurrentField({ id: null, name: null, startTime: null });
       setStartTime(Date.now());
       setActiveTime(0);
