@@ -1,9 +1,0 @@
-const ActionTypes = {
-  FOCUS_FIELD: "FOCUS_FIELD",
-  FOCUS_OUT_FIELD: "FOCUS_OUT_FIELD",
-  WINDOW_FOCUS: "WINDOW_FOCUS",
-  WINDOW_FOCUS_OUT: "WINDOW_BLUR",
-  EXECUTE: "EXECUTE",
-};
-
-export default ActionTypes;
