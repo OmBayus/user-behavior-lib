@@ -1,39 +1,51 @@
-import { behaviorActionsEnum } from "./behavior.action";
+import { BehaviorTypes } from "./constants";
 
 export function behaviorReducer(state, action) {
   switch (action.type) {
-    case behaviorActionsEnum.focusField:
-      return {
-        ...state,
-        currentField: {
-          id: action.payload.id,
-          name: action.payload.name,
-          startTime: Date.now(),
-        },
+    case BehaviorTypes.TRACK_ELEMENT_USAGE:
+      const field = state.fields[action.payload.id];
+      const updatedField = {
+        id: action.payload.id,
+        rest: action.payload.rest,
+        startTime: Date.now(),
+        totalTime: field ? field.totalTime : 0,
       };
-    case behaviorActionsEnum.focusOutField:
-      const startTime = state.currentField.startTime;
-      const fieldId = action.payload.id;
       const updatedFields = {
         ...state.fields,
-        [fieldId]: {
-          ...state.fields[fieldId],
-          totalTime: state.fields[fieldId].totalTime + (Date.now() - startTime),
-        },
+        [action.payload.id]: updatedField,
       };
       return {
         ...state,
         fields: updatedFields,
-        currentField: { id: null, name: null, startTime: null },
       };
-    case behaviorActionsEnum.execute:
-      const activeTime = state.activeTime + (Date.now() - state.startTime);
+    case BehaviorTypes.STOP_TRACKING_ELEMENT_USAGE:
+      const _field = state.fields[action.payload.id];
+      if (!_field) {
+        return state;
+      }
+      const usageTime = Date.now() - _field.startTime;
+      const _updatedField = {
+        ..._field,
+        totalTime: _field.totalTime + usageTime,
+      };
+
+      const _updatedFields = {
+        ...state.fields,
+        [action.payload.id]: _updatedField,
+      };
       return {
         ...state,
-        activeTime,
+        fields: _updatedFields,
+      };
+    case BehaviorTypes.WINDOW_FOCUS:
+      const inactiveTimeWindow = state.inactiveTime + (Date.now() - state.startTime);
+      return {
+        ...state,
+        inactiveTime:inactiveTimeWindow,
         startTime: Date.now(),
       };
-    case behaviorActionsEnum.windowFocus:
+    case BehaviorTypes.WINDOW_FOCUS_OUT:
+      
       const activeTimeWindow =
         state.activeTime + (Date.now() - state.startTime);
       return {
@@ -41,20 +53,12 @@ export function behaviorReducer(state, action) {
         activeTime: activeTimeWindow,
         startTime: Date.now(),
       };
-    case behaviorActionsEnum.windowFocusOut:
-      const inactiveTime = state.inactiveTime + (Date.now() - state.startTime);
-      return {
-        ...state,
-        inactiveTime,
-        startTime: Date.now(),
-      };
-    case behaviorActionsEnum.reset:
+    case BehaviorTypes.RESET:
       return {
         ...state,
         activeTime: 0,
         inactiveTime: 0,
         startTime: Date.now(),
-        currentField: { id: null, name: null, startTime: null },
         fields: action.payload.fields,
       };
     default:

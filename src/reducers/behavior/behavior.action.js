@@ -1,44 +1,40 @@
-export const behaviorActionsEnum = {
-  focusField: "focusField",
-  focusOutField: "focusOutField",
-  execute: "execute",
-  windowFocus: "windowFocus",
-  windowFocusOut: "windowFocusOut",
-  reset: "reset",
-};
+import { BehaviorTypes } from "./constants"
 
-export const behaviorActions = {
-  focusField: (field) => {
-    return {
-      type: behaviorActionsEnum.focusField,
-      payload: field,
-    };
-  },
-  focusOutField: (field) => {
-    return {
-      type: behaviorActionsEnum.focusOutField,
-      payload: field,
-    };
-  },
-  execute: () => {
-    return {
-      type: behaviorActionsEnum.execute,
-    };
-  },
-  windowFocus: () => {
-    return {
-      type: behaviorActionsEnum.windowFocus,
-    };
-  },
-  windowFocusOut: () => {
-    return {
-      type: behaviorActionsEnum.windowFocusOut,
-    };
-  },
-  reset: (fields) => {
-    return {
-      type: behaviorActionsEnum.reset,
-      payload: fields,
-    };
-  },
-};
+export const trackElementUsage = ({id,...rest}) => {
+  return {
+    type: BehaviorTypes.TRACK_ELEMENT_USAGE,
+    payload: {id,...rest},
+  };
+}
+
+export const stopTrackingElementUsage = ({id,...rest}) => {
+  return {
+    type: BehaviorTypes.STOP_TRACKING_ELEMENT_USAGE,
+    payload: {id,...rest},
+  };
+}
+
+export const execute = () => {
+  return {
+    type: BehaviorTypes.EXECUTE,
+  };
+}
+
+export const windowFocus = () => {
+  return {
+    type: BehaviorTypes.WINDOW_FOCUS,
+  };
+}
+
+export const windowFocusOut = () => {
+  return {
+    type: BehaviorTypes.WINDOW_FOCUS_OUT,
+  };
+}
+
+export const reset = (fields) => {
+  return {
+    type: BehaviorTypes.RESET,
+    payload: fields,
+  };
+}

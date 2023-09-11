@@ -1,63 +1,65 @@
 import React, { useEffect, useReducer } from "react";
-import { behaviorReducer, behaviorActions } from "./reducers/behavior";
+import { trackElementUsage as trackElementUsageAction, stopTrackingElementUsage as stopTrackingElementUsageAction, windowFocus,windowFocusOut,  } from "./reducers/behavior/behavior.action";
+import { behaviorReducer } from "./reducers/behavior/behavior.reducer";
 
-export const BehaviorContext = React.createContext();
+const BehaviorContext = React.createContext();
 
-export default function BehaviorContextProvider({ form, children }) {
+export const useBehavior = () => React.useContext(BehaviorContext);
+
+export default function BehaviorProvider({ children }) {
   const [state, dispatch] = useReducer(behaviorReducer, {
     activeTime: 0,
     inactiveTime: 0,
     startTime: Date.now(),
-    currentField: { id: null, name: null, startTime: null },
     fields: {},
   });
 
   useEffect(() => {
-    if (form) {
-      const fields = form.fields.reduce((acc, field) => {
-        acc[field.id] = {id: field.id, name: field.name, type: field.type, totalTime: 0};
-        return acc;
-      }, {});
-      dispatch(behaviorActions.reset(fields))
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        // active
+        dispatch(windowFocus());
+      } else {
+        // passive
+        dispatch(windowFocusOut());
+      }
+    };
 
-      const handleVisibilityChange = () => {
-        if (!document.hidden) {
-          // active
-          dispatch(behaviorActions.windowFocus())
-        } else {
-          // passive
-          dispatch(behaviorActions.windowFocusOut())
-        }
-      };
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
-      document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
 
-      return () => {
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-      };
-    }
-  }, [form]);
-
-  const focusField = (field) => {
-    dispatch(behaviorActions.focusField(field));
+  const trackElementUsage = ({ id, ...rest }) => {
+    dispatch(trackElementUsageAction({ id, rest }));
   };
 
-  const focusOutField = (field) => {
-    dispatch(behaviorActions.focusOutField(field));
+  const stopTrackingElementUsage = ({ id, ...rest }) => {
+    // const stopTrackingElementUsage = ({ id, ...rest }) => {
+    dispatch(stopTrackingElementUsageAction({ id, rest }));
   };
 
   const execute = () => {
-    dispatch(behaviorActions.execute());
+    const activeTime = state.activeTime + (Date.now() - state.startTime);
+
+    const fields = Object.values(state.fields).map(({id,rest,totalTime}) => ({
+      ...rest,
+      id,
+      totalTime
+    }));
+    const inactiveTime = state.inactiveTime
 
     return {
-      activeTime: state.activeTime,
-      inactiveTime: state.inactiveTime,
-      fields: Object.values(state.fields),
+      activeTime,
+      inactiveTime,
+      fields
     };
   };
 
   return (
-    <BehaviorContext.Provider value={{ focusField, focusOutField, execute }}>
+    <BehaviorContext.Provider value={{ trackElementUsage, stopTrackingElementUsage, execute }}>
       {children}
     </BehaviorContext.Provider>
   );
